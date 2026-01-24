@@ -1,18 +1,26 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+export const songRequests = pgTable("song_requests", {
+  id: serial("id").primaryKey(),
+  phoneNumber: text("phone_number").notNull(),
+  query: text("query").notNull(),
+  status: text("status").default("pending"), // pending, playing, completed, failed
+  requestedAt: timestamp("requested_at").defaultNow(),
+  isGroup: boolean("is_group").default(false),
+  groupName: text("group_name"),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const insertSongRequestSchema = createInsertSchema(songRequests).omit({ 
+  id: true, 
+  requestedAt: true 
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export type InsertSongRequest = z.infer<typeof insertSongRequestSchema>;
+export type SongRequest = typeof songRequests.$inferSelect;
+
+export const botSessions = pgTable("bot_sessions", {
+  id: text("id").primaryKey(),
+  creds: text("creds").notNull(), // Store Auth credentials securely
+});
