@@ -5,6 +5,8 @@ import { desc } from "drizzle-orm";
 export interface IStorage {
   createRequest(request: InsertSongRequest): Promise<SongRequest>;
   getRequests(limit?: number): Promise<SongRequest[]>;
+  upsertUser(user: InsertConnectedUser): Promise<ConnectedUser>;
+  getUsers(): Promise<ConnectedUser[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -22,6 +24,32 @@ export class DatabaseStorage implements IStorage {
       .from(songRequests)
       .orderBy(desc(songRequests.requestedAt))
       .limit(limit);
+  }
+
+  async upsertUser(user: InsertConnectedUser): Promise<ConnectedUser> {
+    const [existing] = await db
+      .select()
+      .from(connectedUsers)
+      .where(eq(connectedUsers.phoneNumber, user.phoneNumber));
+
+    if (existing) {
+      const [updated] = await db
+        .update(connectedUsers)
+        .set({ ...user, lastConnected: new Date() })
+        .where(eq(connectedUsers.phoneNumber, user.phoneNumber))
+        .returning();
+      return updated;
+    }
+
+    const [newUser] = await db
+      .insert(connectedUsers)
+      .values({ ...user, lastConnected: new Date() })
+      .returning();
+    return newUser;
+  }
+
+  async getUsers(): Promise<ConnectedUser[]> {
+    return await db.select().from(connectedUsers).orderBy(desc(connectedUsers.lastConnected));
   }
 }
 

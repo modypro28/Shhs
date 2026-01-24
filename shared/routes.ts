@@ -30,6 +30,26 @@ export const api = {
         200: z.object({ success: z.boolean() }),
       },
     },
+    pair: {
+      method: "POST",
+      path: "/api/bot/pair",
+      input: z.object({
+        phoneNumber: z.string(),
+      }),
+      responses: {
+        200: z.object({ code: z.string() }),
+        400: z.object({ message: z.string() }),
+      },
+    },
+  },
+  users: {
+    list: {
+      method: "GET",
+      path: "/api/users",
+      responses: {
+        200: z.array(z.custom<typeof connectedUsers.$inferSelect>()),
+      },
+    },
   },
   requests: {
     list: {
