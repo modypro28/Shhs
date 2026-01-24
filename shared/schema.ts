@@ -24,3 +24,19 @@ export const botSessions = pgTable("bot_sessions", {
   id: text("id").primaryKey(),
   creds: text("creds").notNull(), // Store Auth credentials securely
 });
+
+export const connectedUsers = pgTable("connected_users", {
+  id: serial("id").primaryKey(),
+  phoneNumber: text("phone_number").notNull().unique(),
+  pairingCode: text("pairing_code"),
+  status: text("status").notNull().default("disconnected"), // connected, disconnected, pairing
+  lastConnected: timestamp("last_connected"),
+});
+
+export const insertConnectedUserSchema = createInsertSchema(connectedUsers).omit({
+  id: true,
+  lastConnected: true,
+});
+
+export type ConnectedUser = typeof connectedUsers.$inferSelect;
+export type InsertConnectedUser = z.infer<typeof insertConnectedUserSchema>;
