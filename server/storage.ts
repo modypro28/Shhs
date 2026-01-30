@@ -1,6 +1,20 @@
 import { db } from "./db";
-import { songRequests, type InsertSongRequest, type SongRequest } from "@shared/schema";
-import { desc } from "drizzle-orm";
+import {
+  songRequests,
+  type InsertSongRequest,
+  type SongRequest,
+  connectedUsers,
+  type InsertConnectedUser,
+  type ConnectedUser,
+} from "@shared/schema";
+import { desc, eq } from "drizzle-orm";
+
+/**
+ * Fixes applied:
+ * - imported connectedUsers & related types
+ * - imported eq from drizzle-orm used in queries
+ * - ensured functions return correct typed values
+ */
 
 export interface IStorage {
   createRequest(request: InsertSongRequest): Promise<SongRequest>;
@@ -11,10 +25,7 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async createRequest(request: InsertSongRequest): Promise<SongRequest> {
-    const [newRequest] = await db
-      .insert(songRequests)
-      .values(request)
-      .returning();
+    const [newRequest] = await db.insert(songRequests).values(request).returning();
     return newRequest;
   }
 
