@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { songRequests } from "./schema";
+import { songRequests, connectedUsers } from "./schema";
 
 export const api = {
   bot: {
